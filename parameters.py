@@ -30,6 +30,7 @@ par = {
 
     'input_scopes'              : ['encoder', 'generator'],
     'output_scopes'             : ['decoder', 'discriminator', 'solution'],
+    'rnn_scopes'                : ['generator', 'solution'],
     'solution_hidden'           : 256,
     'discriminator_hidden'      : 128,
     'encoder_hidden'            : 200,
@@ -38,7 +39,7 @@ par = {
 
     # Timings and rates
     'dt'                        : 100,
-    'learning_rate'             : 3e-3,
+    'learning_rate'             : 1e-3,
     'membrane_time_constant'    : 100,
     'connection_prob'           : 1.0,
 
@@ -60,12 +61,12 @@ par = {
 
     # Cost values
     'spike_cost'                : 1e-7,
-    'act_latent_cost'           : 16e-5,
-    'gen_latent_cost'           : 16e-5,
+    'act_latent_cost'           : 2e-4,
+    'gen_latent_cost'           : 2e-4,
 
     # Training specs
     'batch_size'                : 512,
-    'num_autoencoder_batches'   : 8001,
+    'num_autoencoder_batches'   : 2001,
     'num_GAN_batches'           : 8001,
     'num_train_batches'         : 8001,
     'num_entropy_batches'       : 2001,
@@ -177,8 +178,15 @@ def update_dependencies():
         par['hid_inits'][input_scope] = scope_dict
 
 
+    par['discriminator_gen_target'] = np.zeros([par['num_time_steps'],par['batch_size'], par['n_discriminator']])
+    par['discriminator_gen_target'][:,:,:par['n_discriminator']//2] = 1
+
+    par['discriminator_act_target'] = np.zeros([par['num_time_steps'],par['batch_size'], par['n_discriminator']])
+    par['discriminator_act_target'][:,:,par['n_discriminator']//2:] = 1
+
+
 def initialize_weight(dims):
-    w = np.random.gamma(shape=0.25, scale=1.0, size=dims)
+    w = 0.05*np.random.gamma(shape=0.25, scale=1.0, size=dims)
     w *= (np.random.rand(*dims) < par['connection_prob'])
     return np.float32(w)
 
