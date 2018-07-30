@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from itertools import product
+from parameters import par
 
 class AdamOpt:
 
@@ -59,12 +60,16 @@ class AdamOpt:
             new_m = self.beta1*self.m[var.op.name] + (1-self.beta1)*grads
             new_v = self.beta2*self.v[var.op.name] + (1-self.beta2)*grads*grads
 
-            # After a certain number of epochs, switch from ADAM to SGD
             delta_grad = -lr*new_m/(tf.sqrt(new_v) + self.epsilon)
             delta_grad = tf.clip_by_norm(delta_grad, 1)
 
             self.update_var_op.append(tf.assign(self.m[var.op.name], new_m))
             self.update_var_op.append(tf.assign(self.v[var.op.name], new_v))
+
+            if 'W_rnn' in var.op.name:
+                print('Applying {} mask.'.format(var.op.name))
+                delta_grad *= par['rnn_masks'][var.op.name.split('/')[0]]
+
             self.update_var_op.append(tf.assign(self.delta_grads[var.op.name], delta_grad))
             if apply:
                 self.update_var_op.append(tf.assign_add(var, delta_grad))
