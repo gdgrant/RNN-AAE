@@ -30,7 +30,7 @@ par = {
 
     'input_scopes'              : ['encoder', 'generator'],
     'output_scopes'             : ['decoder', 'discriminator', 'solution'],
-    'rnn_scopes'                : ['generator', 'solution'],
+    'rnn_scopes'                : ['solution'],
     'solution_hidden'           : 256,
     'discriminator_hidden'      : 128,
     'encoder_hidden'            : 200,
@@ -66,8 +66,8 @@ par = {
 
     # Training specs
     'batch_size'                : 512,
-    'num_autoencoder_batches'   : 2001,
-    'num_GAN_batches'           : 8001,
+    'num_autoencoder_batches'   : 1401,
+    'num_GAN_batches'           : 3001,
     'num_train_batches'         : 8001,
     'num_entropy_batches'       : 2001,
     'num_final_test_batches'    : 10,

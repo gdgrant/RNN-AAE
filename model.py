@@ -201,6 +201,9 @@ class Model:
         self.train_discriminator = opt.compute_gradients(self.discriminator_loss, var_list=discriminator)
 
 
+        self.reset_adam_op = opt.reset_params()
+
+
 def main(save_fn=None, gpu_id=None):
     """ Run supervised learning training """
 
@@ -231,20 +234,48 @@ def main(save_fn=None, gpu_id=None):
         sess.run(tf.global_variables_initializer())
         t_start = time.time()
 
+        print('\nStarting training.\n')
+
         # Training autoencoder
         for i in range(par['num_autoencoder_batches']):
 
             # Generate a batch of stimulus data for training
+            # and put together the model's feed dictionary
             name, stim_in, y_hat, mk, _ = stim.generate_trial(0)
-
-            # Put together the feed dictionary
             feed_dict = {x:stim_in, y:y_hat, m:mk[...,np.newaxis]}
 
             # Run the model
             _, recon_loss, latent_loss = sess.run([model.train_VAE, model.recon_loss, model.act_latent_loss], feed_dict=feed_dict)
 
             if i%200 == 0:
-                print(i, '|', 'Recon:', recon_loss, 'Latent:', latent_loss)
+                print('{:4} | Recon: {:5.3f} | Lat: {:5.3f}'.format(i, recon_loss, latent_loss))
+
+
+        sess.run(model.reset_adam_op)
+
+
+        # Training generative adversarial network
+        for i in range(par['num_GAN_batches']):
+
+            for j in range(3):
+                if j == 0:
+                    trainer = model.train_generator
+                    curr = 'G'
+                else:
+                    trainer = model.train_discriminator
+                    curr = 'D'
+
+                # Generate a batch of stimulus data for training
+                # and put together the model's feed dictionary
+                name, stim_in, y_hat, mk, _ = stim.generate_trial(0)
+                feed_dict = {x:stim_in, y:y_hat, m:mk[...,np.newaxis]}
+
+                # Run the model
+                _, gen_loss, discr_loss, gen_latent = sess.run([trainer, model.generator_loss, \
+                    model.discriminator_loss, model.gen_latent_loss], feed_dict=feed_dict)
+
+                if i%200 == 0 and j in [0,2]:
+                    print('{:4} | {} | Gen: {:6.3f} | Discr: {:6.3f} | Lat: {:5.3f}'.format(i, curr, gen_loss, discr_loss, gen_latent))
 
 
 
