@@ -24,7 +24,7 @@ par = {
     'num_fix_tuned'             : 4,
     'num_rule_tuned'            : 0,
 
-    'n_latent'                  : 12,
+    'n_latent'                  : 24,
     'n_discriminator'           : 2,
     'n_generator'               : 100,
 
@@ -53,7 +53,7 @@ par = {
     'task'                      : 'multistim',
     'multistim_trial_length'    : 2000,
     'mask_duration'             : 0,
-    'dead_time'                 : 200,
+    'dead_time'                 : 100,
 
     # Tuning function data
     'num_motion_dirs'           : 8,
@@ -63,12 +63,13 @@ par = {
     'spike_cost'                : 1e-7,
     'act_latent_cost'           : 2e-4,
     'gen_latent_cost'           : 2e-4,
+    'var_cost'                  : 1e-4,
 
     # Training specs
     'batch_size'                : 512,
-    'num_autoencoder_batches'   : 1401,
-    'num_GAN_batches'           : 3001,
-    'num_train_batches'         : 8001,
+    'num_autoencoder_batches'   : 1801,
+    'num_GAN_batches'           : 6001,
+    'num_train_batches'         : 6001,
     'num_entropy_batches'       : 2001,
     'num_final_test_batches'    : 10,
 }
@@ -128,11 +129,11 @@ def update_dependencies():
             hidden_size = par['generator_hidden']
             output_size = par['n_latent']
         elif scope == 'discriminator':
-            input_size  = par['n_latent']
+            input_size  = par['n_input']
             hidden_size = par['discriminator_hidden']
             output_size = par['n_discriminator']
         elif scope == 'solution':
-            input_size  = par['n_latent']
+            input_size  = par['n_input']
             hidden_size = par['solution_hidden']
             output_size = par['n_output']
 
@@ -178,10 +179,10 @@ def update_dependencies():
         par['hid_inits'][input_scope] = scope_dict
 
 
-    par['discriminator_gen_target'] = np.zeros([par['num_time_steps'],par['batch_size'], par['n_discriminator']])
+    par['discriminator_gen_target'] = np.zeros([par['num_time_steps'],par['batch_size'], par['n_discriminator']], dtype=np.float32)
     par['discriminator_gen_target'][:,:,:par['n_discriminator']//2] = 1
 
-    par['discriminator_act_target'] = np.zeros([par['num_time_steps'],par['batch_size'], par['n_discriminator']])
+    par['discriminator_act_target'] = np.zeros([par['num_time_steps'],par['batch_size'], par['n_discriminator']], dtype=np.float32)
     par['discriminator_act_target'][:,:,par['n_discriminator']//2:] = 1
 
 
