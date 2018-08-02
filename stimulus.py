@@ -107,7 +107,13 @@ class MultiStimulus:
         return self.task_types
 
 
-    def generate_trial(self, current_task):
+    def generate_trial(self, current_task, partial=False):
+
+        if partial:
+            self.motion_dirs = np.linspace(0,2*np.pi-2*np.pi/par['num_motion_dirs'],par['num_motion_dirs'])[::2]
+        else:
+            self.motion_dirs = np.linspace(0,2*np.pi-2*np.pi/par['num_motion_dirs'],par['num_motion_dirs'])
+
 
         self.trial_info = {
             'neural_input'   : np.random.normal(par['stim_noise_mean'], par['noise_stim'], size=self.input_shape),
@@ -158,14 +164,16 @@ class MultiStimulus:
 
     def task_go(self, variant='go', offset=0):
 
+        fix_length = 300
+
         # Task parameters
         if variant == 'go':
-            stim_onset = np.random.randint(self.fix_time, self.fix_time+1000, par['batch_size'])//par['dt']
+            stim_onset = np.random.randint(self.fix_time, self.fix_time+fix_length, par['batch_size'])//par['dt']
             stim_off = -1
-            fixation_end = np.ones(par['batch_size'], dtype=np.int16)*(self.fix_time+1000)//par['dt']
+            fixation_end = np.ones(par['batch_size'], dtype=np.int16)*(self.fix_time+fix_length)//par['dt']
             resp_onset = fixation_end
         elif variant == 'rt_go':
-            stim_onset = np.random.randint(self.fix_time, self.fix_time+1000, par['batch_size'])//par['dt']
+            stim_onset = np.random.randint(self.fix_time, self.fix_time+fix_length, par['batch_size'])//par['dt']
             stim_off = -1
             fixation_end = np.ones(par['batch_size'],dtype=np.int16)*par['num_time_steps']
             resp_onset = stim_onset
